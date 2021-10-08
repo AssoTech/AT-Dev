@@ -97,9 +97,8 @@ else
     case "$cmde" in
         "up")
                 echo "Regénération des conteneurs"
-                echo $CCI_dev_BASE
-                docker-compose -f $CCI_dev_BASE/src/docker-compose.yml build --pull
-                docker-compose -f $CCI_dev_BASE/src/docker-compose.yml up -d
+                docker-compose -f "$CCI_dev_BASE/src/docker-compose.yml" build --pull
+                docker-compose -f "$CCI_dev_BASE/src/docker-compose.yml" up -d
             ;;
         "start")
                 echo "Lancement des conteneurs docker"

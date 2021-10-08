@@ -1,0 +1,23 @@
+# Image MariaDB 10.6
+
+FROM mariadb:10.6
+
+WORKDIR /usr/local
+
+# configuration locales et timezone
+RUN apt-get update \
+    && apt-get install -y locales tzdata \
+    && echo fr_FR.UTF-8 UTF-8 > /etc/locale.gen && locale-gen \
+    && ln -fs /usr/share/zoneinfo/Europe/Paris /etc/localtime && dpkg-reconfigure -f noninteractive tzdata; \
+# nettoyage
+    apt-get clean \
+    && apt-get autoclean; \
+    rm -rf /var/lib/apt/lists/* \
+           /tmp/*
+# ajout d'éléments de confort
+RUN echo "ls -alh \$*" > /usr/local/bin/ll \
+    && chmod a+x /usr/local/bin/ll
+
+# ajouter la configuration mariadb
+COPY ./mariadb/initdb.d/* /docker-entrypoint-initdb.d
+RUN chmod a+x /docker-entrypoint-initdb.d/*

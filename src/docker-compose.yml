@@ -1,0 +1,114 @@
+# Environnement AssoTech, développement
+##########################################################################################
+# Fichier docker-compose pour activer l'environnement AssoTech
+#   pour alambix, version développement
+#                                                                     FS 03-10-2021, 00:56
+##########################################################################################
+
+# Utilise la syntaxe version 3.9
+#   https://docs.docker.com/compose/compose-file/#/versioning
+version: '3.9'
+
+# configuration des services
+services:
+    # configuration du conteneur php-fpm
+    php-fpm:
+        container_name: cci-dev_php-fpm
+        build:
+            context: ./
+            dockerfile: Dockerfile.php
+        restart: on-failure
+        volumes:
+            - ../etc/php:/etc/php1
+            - ../var/www/html:/usr/local/var/www
+            - ../var/log/php:/usr/local/var/log
+            - type: volume
+              source: socket-php
+              target: /run/php
+            - type: volume
+              source: socket-mariadb
+              target: /run/mysqld
+        tmpfs:
+            - /var/run/pid:mode=0770,size=1k,uid=3001,gid=3001
+            - /tmp
+        networks:
+            net_php-fpm:
+
+    # configuration du conteneur mariadb
+    mariadb:
+        container_name: cci-dev_mariadb
+        build:
+            context: ./
+            dockerfile: Dockerfile.mariadb
+        restart: on-failure
+        environment:
+            MYSQL_ROOT_PASSWORD_FILE: /run/secrets/dbRootPass.txt
+        ports:
+            - "3306:3306"
+        volumes:
+            - ../etc/mysql/conf.d:/etc/mysql/mariadb.conf.d
+            - ../var/lib/mysql:/var/lib/mysql
+            - ../var/log/mysql:/var/log/mysql
+            - ./secrets:/run/secrets:ro
+            - type: volume
+              source: socket-mariadb
+              target: /run/mysqld
+        networks:
+            net_mariadb:
+                ipv4_address: 172.20.0.21
+
+    # configuration du conteneur Apache
+    httpd:
+        container_name: cci-dev_httpd
+        image: httpd:2.4
+        restart: on-failure
+        ports:
+            - "80:80"
+            - "443:443"
+        volumes:
+            - ../etc/apache2:/usr/local/apache2/conf
+            - ../var/www/html:/usr/local/apache2/htdocs/
+            - ../var/log/apache2:/usr/local/apache2/logs/
+
+    # configuration phpmyadmin
+    phpmyadmin:
+        container_name: cci-dev_phpmyadmin
+        image: phpmyadmin
+        restart: always
+        environment:
+            PMA_HOST: 172.20.0.21
+            PMA_PMADB: phpmyadmin
+            PMA_CONTROLUSER: phpmyadmin
+            PMA_CONTROLPASS_FILE: /run/secrets/uPhpmyadminPass.txt
+        ports:
+            - 8080:80
+        volumes:
+            - ../etc/phpmyadmin:/etc/phpmyadmin
+            - ./secrets:/run/secrets:ro
+        networks:
+            net_mariadb:
+                ipv4_address: 172.20.0.22
+
+# Volumes pour contenir les socket et les certificats
+volumes:
+    socket-php:
+        driver: local
+    socket-mariadb:
+        driver: local
+
+# Réseaux spécifiques
+networks:
+    # réseau pour les connexions à MariaDB
+    net_mariadb:
+        driver: bridge
+        ipam:
+            driver: default
+            config:
+                - subnet: 172.20.0.0/24
+    # réseau pour rendre possible ssmpt
+    net_php-fpm:
+        driver: bridge
+        ipam:
+            driver: default
+            config:
+                - subnet: 172.21.0.0/24

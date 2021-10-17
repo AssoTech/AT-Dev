@@ -1,16 +1,21 @@
 #! /bin/bash
 ##########################################################################################
-# Script de gestion d'actions diverses avec docker
+# Script de gestion d'actions diverses avec docker dans ACT-Dev
 #
 #                                                                     FS 15-11-2018, 16:21
+#                                                                     FS 18-10-2021, 01:12
 ##########################################################################################
 # À voir
 #   -> …
 ##########################################################################################
 
 
+# bibliothèque de fonctions
+###############################
+
 usage() {
     if [ "$1" == "-h" ]; then
+        echo "Script de gestion d'actions diverses avec docker dans ACT-Dev."
         echo "Usage: ${0##*/}"
         echo "          up | start | stop | down |"
         echo "          contPhpJumpIn | contMariaDBJumpIn | contApacheJumpIn | contPhpMyAdminJumpIn |"
@@ -28,16 +33,33 @@ testCmdeValide() {
         "install" "clean" "purge" \
         "bye"
     do
-        if [ -z "${cmde#"$1"}" ]; then
-            return 1
-        fi
+        if [ -z "${cmde#"$1"}" ]; then return 1; fi
     done
     return 0
 }
 
-
-# bibliothèque de fonctions
-###############################
+testConfigValide() {
+    if [[ -z $ACT_Dev_BASE ]]; then
+        echo "La première configuration d'ACT-Dev ne semble pas avoir été effectuée :" \
+             "avant de pouvoir utiliser l'environnement de développement ACT-Dev,"\
+             "la commande « dkConfig install » doit d'abord être exécutée" \
+             "à partir du répertoire bin dans le projet ACT-Dev."
+        memoChemin=`pwd`
+        if [[ -d bin ]]; then cd ./bin; fi
+        if [[ -f dkConfig ]]; then
+            echo "Voulez-vous exécuter dkConfig install immédiatement ?"
+            read -p "O pour confirmer : " confirmation
+            if [[ "${confirmation:0:1}" == "O" || "${confirmation:0:1}" == "o" ]]; then
+                echo "Attention : il faudra recharger manuellement les variables d'environnement."
+                . ./dkConfig install
+            fi
+        fi
+        cd $memoChemin
+        return 1
+    else
+        return 0
+    fi
+}
 
 
 
@@ -46,54 +68,41 @@ testCmdeValide() {
 ##########################################################################################
 
 usage $*
-if testCmdeValide $1; then
-    echo "Veuillez choisir quelle action lancer :"
-    echo "    1  - Regénérer les conteneurs principaux              -> up"
-    echo "    2  - Démarrer les conteneurs principaux               -> start"
-    echo "    3  - Arrêter les conteneurs principaux                -> stop"
-    echo "    4  - Down pour les conteneurs principaux              -> down"
-    echo "   10  - Rentrer dans cci-dev_php-fpm                     -> contPhpJumpIn"
-    echo "   11  - Rentrer dans cci-dev_mariadb                     -> contMariaDBJumpIn"
-    echo "   12  - Rentrer dans cci-dev_httpd                       -> contApacheJumpIn"
-    echo "   13  - Rentrer dans cci-dev_phpmyadmin                  -> contPhpMyAdminJumpIn"
-    echo "   50  - Première configuration                           -> install"
-    echo "   51  - Nettoyage de l'inutile dans docker               -> clean"
-    echo "   52  - Purger totalement docker                         -> purge"
-    echo "    0  - Rien !"
-    read -p "Votre choix : " cmde
-    case "$cmde" in
-         1) cmde="up"                   ;;
-         2) cmde="start"                ;;
-         3) cmde="stop"                 ;;
-         4) cmde="down"                 ;;
-        10) cmde="contPhpJumpIn"        ;;  
-        11) cmde="contMariaDBJumpIn"    ;;
-        12) cmde="contApacheJumpIn"     ;;
-        13) cmde="contPhpMyAdminJumpIn" ;;
-        50) cmde="install"              ;;
-        51) cmde="clean"                ;;
-        52) cmde="purge"                ;;
-        *)  cmde="bye"                  ;;
-    esac
-    echo -e "\r"
-else
-    cmde=$1
-    shift
-fi
-if [[ ${cmde} = "install" ]]; then
-    echo "Mise en place des variables d'environnement…"
-    cheminBin=`pwd`
-    cheminBase=${cheminBin%/bin}
-    if [[ $cheminBin != $cheminBase ]]; then
-        printf "\n" >> ~/.profile
-        echo export CCI_dev_BASE=$cheminBase >> ~/.profile
-        echo export PATH=$cheminBin:$PATH >> ~/.profile
+if testConfigValide ; then
+    if testCmdeValide $1; then
+        echo "Veuillez choisir quelle action lancer :"
+        echo "    1  - Regénérer les conteneurs principaux              -> up"
+        echo "    2  - Démarrer les conteneurs principaux               -> start"
+        echo "    3  - Arrêter les conteneurs principaux                -> stop"
+        echo "    4  - Down pour les conteneurs principaux              -> down"
+        echo "   10  - Rentrer dans cci-dev_php-fpm                     -> contPhpJumpIn"
+        echo "   11  - Rentrer dans cci-dev_mariadb                     -> contMariaDBJumpIn"
+        echo "   12  - Rentrer dans cci-dev_httpd                       -> contApacheJumpIn"
+        echo "   13  - Rentrer dans cci-dev_phpmyadmin                  -> contPhpMyAdminJumpIn"
+        echo "   50  - Première configuration                           -> install"
+        echo "   51  - Nettoyage de l'inutile dans docker               -> clean"
+        echo "   52  - Purger totalement docker                         -> purge"
+        echo "    0  - Rien !"
+        read -p "Votre choix : " cmde
+        case "$cmde" in
+             1) cmde="up"                   ;;
+             2) cmde="start"                ;;
+             3) cmde="stop"                 ;;
+             4) cmde="down"                 ;;
+            10) cmde="contPhpJumpIn"        ;;  
+            11) cmde="contMariaDBJumpIn"    ;;
+            12) cmde="contApacheJumpIn"     ;;
+            13) cmde="contPhpMyAdminJumpIn" ;;
+            50) cmde="install"              ;;
+            51) cmde="clean"                ;;
+            52) cmde="purge"                ;;
+            *)  cmde="bye"                  ;;
+        esac
+        echo -e "\r"
     else
-        echo "CCI-dev n'a pas pu être installé, car la commande dkAction install n'a pas été lancée à partir du répertoire cci-dev/bin"
+        cmde=$1
+        shift
     fi
-elif [[ -z $CCI_dev_BASE ]]; then
-    echo "Il faut d'abord lancer dkAction install à partir du répertoire cci-dev/bin, avant de pouvoir utiliser CCI-dev…"
-else
     case "$cmde" in
         "up")
                 echo "Regénération des conteneurs"
@@ -138,7 +147,7 @@ else
                     docker stop $(docker ps -a -q)
                     docker rm -f $(docker ps -a -q)
                     docker rmi -f $(docker images -q)
-                    docker network rm $(docker network ls -q)
+                    docker network rm $(docker network ls -f type=custom -q)
                     if [ "$confirmation" == "Ov" ]; then
                         docker volume rm $(docker volume ls -q)
                     fi

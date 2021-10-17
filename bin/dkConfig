@@ -1,0 +1,130 @@
+#! /bin/bash
+##########################################################################################
+# Script d'installation de ACT-Dev
+#
+#                                                                     FS 15-11-2018, 16:21
+##########################################################################################
+# À voir
+#   -> dkConfig update à coder…
+##########################################################################################
+
+
+# bibliothèque de fonctions
+###############################
+
+usage() {
+    if [ "$1" == "-h" ]; then
+        echo "Script d'installation de ACT-Dev."
+        echo "Usage: ${0##*/}"
+        echo "          install | update |"
+        echo "          bye"
+        echo "Au revoir..."
+        exit 1
+    fi
+}
+
+testCmdeValide() {
+    for cmde in \
+        "install" "update" \
+        "bye"
+    do
+        if [ -z "${cmde#"$1"}" ]; then return 1; fi
+    done
+    return 0
+}
+
+testConfigValide() {
+    if [[ -z $ACT_Dev_BASE ]]; then
+        echo "La première configuration d'ACT-Dev ne semble pas avoir été effectuée :" \
+             "avant de pouvoir utiliser l'environnement de développement ACT-Dev,"\
+             "la commande « dkConfig install » doit d'abord être exécutée" \
+             "à partir du répertoire bin dans le projet ACT-Dev."
+        memoChemin=`pwd`
+        if [[ -d bin ]]; then cd ./bin; fi
+        if [[ -f dkConfig ]]; then
+            echo "Voulez-vous exécuter dkConfig install immédiatement ?"
+            read -p "O pour confirmer : " confirmation
+            if [[ "${confirmation:0:1}" == "O" || "${confirmation:0:1}" == "o" ]]; then
+                . ./dkConfig install
+            fi
+        fi
+        cd $memoChemin
+        return 1
+    else
+        return 0
+    fi
+}
+
+testInstallPossible() {
+    if [[ ! -z $ACT_Dev_BASE ]]; then
+        echo "La première configuration d'ACT-Dev semble avoir déjà été effectuée."
+        if [[ -f dkConfig ]]; then
+            echo "Voulez-vous exécuter dkConfig update à la place ?"
+            read -p "O pour confirmer : " confirmation
+            if [[ "${confirmation:0:1}" == "O" || "${confirmation:0:1}" == "o" ]]; then
+                . ./dkConfig update
+            fi
+        fi
+        return 1
+    else
+        return 0
+    fi
+}
+
+
+
+##########################################################################################
+# Partie principale
+##########################################################################################
+
+usage $*
+if testCmdeValide $1; then
+    echo "Veuillez choisir quelle action lancer :"
+    echo "    1  - Première configuration                           -> install"
+    echo "    2  - Mise à jour de la configuration                  -> update"
+    echo "    0  - Rien !"
+    read -p "Votre choix : " cmde
+    case "$cmde" in
+         1) cmde="install"              ;;
+         2) cmde="update"               ;;
+        *)  cmde="bye"                  ;;
+    esac
+    echo -e "\r"
+else
+    cmde=$1
+    shift
+fi
+case "$cmde" in
+    "install") # Première configuration
+            if [[ -d bin ]]; then cd ./bin; fi
+            if testInstallPossible ; then
+                echo "Configuration de l'environnement ACT-Dev."
+                cheminCourant=`pwd`
+                cheminBase=${cheminCourant%/bin}
+                if [[ $cheminCourant != $cheminBase ]]; then
+                    echo "--> Mise en place des variables d'environnement…"
+                    printf "\n" >> ~/.profile
+                    echo "# ****************************************************************************************" >> ~/.profile
+                    echo "# ACT-Dev - Configuration de l'environnement" >> ~/.profile
+                    echo "# ****************************************************************************************" >> ~/.profile
+                    echo export ACT_Dev_BASE=$cheminBase >> ~/.profile
+                    echo export PATH=$cheminCourant:$PATH >> ~/.profile
+                    echo "# ****************************************************************************************" >> ~/.profile
+                    . ~/.profile
+                else
+                    echo "ACT-Dev n'a pas pu être configuré, car la commande dkConfig n'a pas été exécutée" \
+                         "à partir du répertoire bin dans le projet ACT-Dev."
+                fi
+            fi
+            cd $cheminBase
+        ;;
+    "update") # Mise à jour de la configuration
+            if testConfigValide ; then
+                echo "Mise à jour de la configuration ACT-Dev."
+                echo "--> en attente de réalisation…"
+            fi
+        ;;
+    "bye")  echo "Au revoir..." ;;
+    *)      echo "--> Attention : je ne sais pas quoi faire avec $cmde,"
+            echo "      donc je m'en vais !" ;;
+esac

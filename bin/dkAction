@@ -1,6 +1,6 @@
 #! /bin/bash
 ##########################################################################################
-# Script de gestion d'actions diverses avec docker dans ACT-Dev
+# Script de gestion d'actions diverses avec docker dans l'environnement ACT-Dev
 #
 #                                                                     FS 15-11-2018, 16:21
 #                                                                     FS 18-10-2021, 01:12

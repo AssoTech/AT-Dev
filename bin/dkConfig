@@ -1,11 +1,12 @@
 #! /bin/bash
 ##########################################################################################
-# Script d'installation de ACT-Dev
+# Script d'installation et de configuration de l'environnement ACT-Dev
 #
 #                                                                     FS 15-11-2018, 16:21
 ##########################################################################################
 # À voir
 #   -> dkConfig update à coder…
+#   -> gérer la réécriture de la configuration dans le .profile
 ##########################################################################################
 
 

@@ -1,5 +1,5 @@
-# CCI-dev
+# ACT-Dev
 
 
 
-CCI-dev est l'environnement de développement de base pour les cours.
+ACT-Dev est l'environnement de développement de base pour les cours.

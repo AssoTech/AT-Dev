@@ -1,0 +1,72 @@
+******************************************************************************************
+* Organisation du suivi de code Git
+******************************************************************************************
+
+Le respect des règles suivantes permettront une organisation propre du suivi de version
+avec git.
+
+Structure d'un commit
+    <type> [(domaine)] : <description>
+    [corps]
+
+Types de commit proposés :
+    Fonctionnalité      Introduction d’une nouvelle fonctionnalité
+    Correction          Correction d’une erreur (bug)
+    Documentation       Modification de la documentation uniquement
+    Style               Changement qui n’affecte pas la signification du code (espace,
+                            formatage, points-virgules manquants, etc.)
+    Réécriture          Changement de code qui ne corrige pas d’erreur et n’ajoute pas de
+                            fonctionnalité
+    Test                Ajout de tests manquants ou correction des tests existants
+    Revert              Annulation d'un commit précédent.
+
+Domaines de l'application :
+    général     Configuration générale de l'environnement ACT-Dev
+    …           Aucun autre domaine n'est défini pour le moment
+
+Branches git à utiliser (dans la logique de git flow)
+    main        Branche unique et constante pour les versions en production
+    develop     Branche unique et constante pour les versions en développement
+    feature     Branches multiples pour les différentes fonctionnalités
+    hotfixes    Branches multiples pour les corrections de bugs
+    version     Branches multiples pour la préparation des mises en production
+
+
+******************************************************************************************
+* Rappel de certaines commandes git
+******************************************************************************************
+
+commandes autour des branches
+    git branch develop                                  Créer la branche develop
+    git checkout develop                                Basculer sur la branche develop
+    git checkout -b feature/foo develop                 Créer la branche feature/foo à partir de la branche develop
+intégration d'une fonctionnalité :
+    git checkout develop
+    git merge --no-ff feature/foo
+    git branch -d feature/foo
+création d'une branche de version :
+    git checkout -b version-2.0.1 develop
+    -> changer les éléments qui déterminent le nouveau numéro de version
+    git commit -a -m "Réécriture (general): changement de version vers la 2.0.1"
+    git checkout main
+    git merge --no-ff version-2.0.1
+    git tag -a 2.0.1
+    git checkout develop
+    git merge --no-ff version-2.0.1
+    git branch -d version-2.0.1
+création d'une branche de correction de bug :
+    git checkout -b hotfix-1.2.1 main
+    changer les éléments qui déterminent le nouveau numéro de version
+    git commit -a -m "feature: changement de version vers la 2.2.1"
+    git commit -m "fix (domaine): Fixed severe production problem"
+    git checkout main
+    git merge --no-ff hotfix-2.2.1
+    git tag -a 2.2.1
+    git checkout develop
+    git merge --no-ff hotfix-2.2.1
+    git branch -d hotfix-2.2.1
+nettoyage de l'historique local :
+    git log -10
+    git rebase -i origin/develop
+        -> reword pour demander à corriger le message du commit
+    

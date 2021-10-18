@@ -19,9 +19,9 @@ services:
             dockerfile: Dockerfile.php
         restart: on-failure
         volumes:
-            - ../etc/php:/etc/php1
-            - ../var/www/html:/usr/local/var/www
-            - ../var/log/php:/usr/local/var/log
+            - ../etc/php/:/etc/php1
+            - ../var/www/html/:/usr/local/var/www
+            - ../var/log/php/:/usr/local/var/log
             - type: volume
               source: socket-php
               target: /run/php
@@ -46,10 +46,10 @@ services:
         ports:
             - "3306:3306"
         volumes:
-            - ../etc/mysql/conf.d:/etc/mysql/mariadb.conf.d
-            - ../var/lib/mysql:/var/lib/mysql
-            - ../var/log/mysql:/var/log/mysql
-            - ./secrets:/run/secrets:ro
+            - ../etc/mysql/conf.d/:/etc/mysql/mariadb.conf.d
+            - ../var/lib/mysql/:/var/lib/mysql
+            - ../var/log/mysql/:/var/log/mysql
+            - ./secrets/:/run/secrets:ro
             - type: volume
               source: socket-mariadb
               target: /run/mysqld
@@ -66,9 +66,9 @@ services:
             - "80:80"
             - "443:443"
         volumes:
-            - ../etc/apache2:/usr/local/apache2/conf
-            - ../var/www/html:/usr/local/apache2/htdocs/
-            - ../var/log/apache2:/usr/local/apache2/logs/
+            - ../etc/apache2/:/usr/local/apache2/conf
+            - ../var/www/html/:/usr/local/apache2/htdocs/
+            - ../var/log/apache2/:/usr/local/apache2/logs/
 
     # configuration phpmyadmin
     phpmyadmin:
@@ -83,8 +83,8 @@ services:
         ports:
             - 8080:80
         volumes:
-            - ../etc/phpmyadmin:/etc/phpmyadmin
-            - ./secrets:/run/secrets:ro
+            - ../etc/phpmyadmin/:/etc/phpmyadmin
+            - ./secrets/:/run/secrets:ro
         networks:
             net_mariadb:
                 ipv4_address: 172.20.0.22

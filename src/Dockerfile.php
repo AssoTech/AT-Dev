@@ -7,7 +7,7 @@ WORKDIR /usr/local
 # supprimer ce qui vient de docker dans la configuration php
 RUN rm etc/php-fpm.d/*.conf \
 # configurer locales et timezone puis ajouter une série de binaires utiles
-    && apk add --update bash tzdata ssmtp \
+    && apk add --update bash tzdata ssmtp oniguruma-dev \
     && cp /usr/share/zoneinfo/Europe/Paris /etc/localtime \
     && echo "Europe/Paris" > /etc/timezone \
     && apk del tzdata \
@@ -24,6 +24,7 @@ RUN rm etc/php-fpm.d/*.conf \
     && docker-php-ext-install -j$(nproc) gd \
                                          intl \
                                          mysqli \
+                                         mbstring \
                                          pdo_mysql \
                                          zip \
     \

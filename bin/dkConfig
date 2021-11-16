@@ -35,21 +35,24 @@ testCmdeValide() {
 }
 
 testConfigValide() {
-    if [[ -z $ACT_Dev_BASE ]]; then
-        echo "La première configuration d'ACT-Dev ne semble pas avoir été effectuée :" \
-             "avant de pouvoir utiliser l'environnement de développement ACT-Dev,"\
-             "la commande « dkConfig install » doit d'abord être exécutée" \
-             "à partir du répertoire bin dans le projet ACT-Dev."
-        memoChemin=`pwd`
-        if [[ -d bin ]]; then cd ./bin; fi
-        if [[ -f dkConfig ]]; then
-            echo "Voulez-vous exécuter dkConfig install immédiatement ?"
-            read -p "O pour confirmer : " confirmation
-            if [[ "${confirmation:0:1}" == "O" || "${confirmation:0:1}" == "o" ]]; then
-                . ./dkConfig install
-            fi
-        fi
-        cd $memoChemin
+    if [[ ! -d $cheminBase/src/alambix ]]; then
+        echo "L'installation n'est pas convenable…"
+
+#    if [[ -z $ACT_Dev_BASE ]]; then
+#        echo "La première configuration d'ACT-Dev ne semble pas avoir été effectuée :" \
+#             "avant de pouvoir utiliser l'environnement de développement ACT-Dev,"\
+#             "la commande « dkConfig install » doit d'abord être exécutée" \
+#             "à partir du répertoire bin dans le projet ACT-Dev."
+#        memoChemin=`pwd`
+#        if [[ -d bin ]]; then cd ./bin; fi
+#        if [[ -f dkConfig ]]; then
+#            echo "Voulez-vous exécuter dkConfig install immédiatement ?"
+#            read -p "O pour confirmer : " confirmation
+#            if [[ "${confirmation:0:1}" == "O" || "${confirmation:0:1}" == "o" ]]; then
+#                . ./dkConfig install
+#            fi
+#        fi
+#        cd $memoChemin
         return 1
     else
         return 0
@@ -79,7 +82,9 @@ testInstallPossible() {
 ##########################################################################################
 
 usage $*
-if testCmdeValide $1; then
+if [ `/usr/bin/id -u` != 0 ]; then
+    exec /usr/bin/sudo -E $0 $*
+elif testCmdeValide $1; then
     echo "Veuillez choisir quelle action lancer :"
     echo "    1  - Première configuration                           -> install"
     echo "    2  - Mise à jour de la configuration                  -> update"
@@ -97,27 +102,41 @@ else
 fi
 case "$cmde" in
     "install") # Première configuration
-            if [[ -d bin ]]; then cd ./bin; fi
-            if testInstallPossible ; then
-                echo "Configuration de l'environnement ACT-Dev."
-                cheminCourant=`pwd`
-                cheminBase=${cheminCourant%/bin}
-                if [[ $cheminCourant != $cheminBase ]]; then
-                    echo "--> Mise en place des variables d'environnement…"
-                    printf "\n" >> ~/.profile
-                    echo "# ****************************************************************************************" >> ~/.profile
-                    echo "# ACT-Dev - Configuration de l'environnement" >> ~/.profile
-                    echo "# ****************************************************************************************" >> ~/.profile
-                    echo export ACT_Dev_BASE=$cheminBase >> ~/.profile
-                    echo export PATH=$cheminCourant:$PATH >> ~/.profile
-                    echo "# ****************************************************************************************" >> ~/.profile
-                    . ~/.profile
-                else
-                    echo "ACT-Dev n'a pas pu être configuré, car la commande dkConfig n'a pas été exécutée" \
-                         "à partir du répertoire bin dans le projet ACT-Dev."
-                fi
+            mkdir -p /opt
+            mv ../../ACT-Dev /opt/local
+            cd /opt/local
+            chmod -R root:adm .
+            if [[ ! -f "src/secrets/dbRootPass.txt" ]] ; then
+                echo "Fasirtai789+_JolmkapnfGfeoi=628/85zc" > src/secrets/dbRootPass.txt
             fi
-            cd $cheminBase
+            if [[ ! -f "src/secrets/uMariadbPass.txt" ]] ; then
+                echo "mariadb*1" > src/secrets/uMariadbPass.txt
+            fi
+            if [[ ! -f "src/secrets/uPhpmyadminPass.txt" ]] ; then
+                echo "Zioprgio156+_PlimkkuifGfeoi=197/54rt" > src/secrets/uPhpmyadminPass.txt
+            fi
+
+#            if [[ -d bin ]]; then cd ./bin; fi
+#            if testInstallPossible ; then
+#                echo "Configuration de l'environnement ACT-Dev."
+#                cheminCourant=`pwd`
+#                cheminBase=${cheminCourant%/bin}
+#                if [[ $cheminCourant != $cheminBase ]]; then
+#                    echo "--> Mise en place des variables d'environnement…"
+#                    printf "\n" >> ~/.profile
+#                    echo "# ****************************************************************************************" >> ~/.profile
+#                    echo "# ACT-Dev - Configuration de l'environnement" >> ~/.profile
+#                    echo "# ****************************************************************************************" >> ~/.profile
+#                    echo export ACT_Dev_BASE=$cheminBase >> ~/.profile
+#                    echo export PATH=$cheminCourant:$PATH >> ~/.profile
+#                    echo "# ****************************************************************************************" >> ~/.profile
+#                    . ~/.profile
+#                else
+#                    echo "ACT-Dev n'a pas pu être configuré, car la commande dkConfig n'a pas été exécutée" \
+#                         "à partir du répertoire bin dans le projet ACT-Dev."
+#                fi
+#            fi
+#            cd $cheminBase
         ;;
     "update") # Mise à jour de la configuration
             if testConfigValide ; then

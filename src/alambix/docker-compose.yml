@@ -1,7 +1,8 @@
 # Environnement AssoTech, développement
 ##########################################################################################
-# Fichier docker-compose pour activer l'environnement AssoTech
+# Fichier docker-compose pour activer l'environnement ACT-Dev
 #   pour alambix, version développement
+# 
 #                                                                     FS 03-10-2021, 00:56
 ##########################################################################################
 
@@ -12,31 +13,31 @@ version: '3.9'
 # configuration des services
 services:
     # configuration du conteneur php-fpm
-    php-fpm:
-        container_name: cci-dev_php-fpm
-        build:
-            context: ./
-            dockerfile: Dockerfile.php
-        restart: on-failure
-        volumes:
-            - ../etc/php/:/etc/php1
-            - ../var/www/html/:/usr/local/var/www
-            - ../var/log/php/:/usr/local/var/log
-            - type: volume
-              source: socket-php
-              target: /run/php
-            - type: volume
-              source: socket-mariadb
-              target: /run/mysqld
-        tmpfs:
-            - /var/run/pid:mode=0770,size=1k,uid=3001,gid=3001
-            - /tmp
-        networks:
-            net_php-fpm:
+#    php-fpm:
+#        container_name: act-dev_php-fpm
+#        build:
+#            context: ./
+#            dockerfile: Dockerfile.php
+#        restart: on-failure
+#        volumes:
+#            - ../../etc/php/:/etc/php1
+#            - ../../var/www/html/:/usr/local/var/www
+#            - ../../var/log/php/:/usr/local/var/log
+#            - type: volume
+#              source: socket-php
+#              target: /run/php
+#            - type: volume
+#              source: socket-mariadb
+#              target: /run/mysqld
+#        tmpfs:
+#            - /var/run/pid:mode=0770,size=1k,uid=3001,gid=3001
+#            - /tmp
+#        networks:
+#            net_php-fpm:
 
     # configuration du conteneur mariadb
     mariadb:
-        container_name: cci-dev_mariadb
+        container_name: act-dev_mariadb
         build:
             context: ./
             dockerfile: Dockerfile.mariadb
@@ -46,10 +47,10 @@ services:
         ports:
             - "3306:3306"
         volumes:
-            - ../etc/mysql/conf.d/:/etc/mysql/mariadb.conf.d
-            - ../var/lib/mysql/:/var/lib/mysql
-            - ../var/log/mysql/:/var/log/mysql
-            - ./secrets/:/run/secrets:ro
+            - ../../etc/mysql/conf.d/:/etc/mysql/mariadb.conf.d
+            - ../../var/lib/mysql/:/var/lib/mysql
+            - ../../var/log/mysql/:/var/log/mysql
+            - ../secrets/:/run/secrets:ro
             - type: volume
               source: socket-mariadb
               target: /run/mysqld
@@ -59,20 +60,20 @@ services:
 
     # configuration du conteneur Apache
     httpd:
-        container_name: cci-dev_httpd
+        container_name: act-dev_httpd
         image: httpd:2.4
         restart: on-failure
         ports:
             - "80:80"
             - "443:443"
         volumes:
-            - ../etc/apache2/:/usr/local/apache2/conf
-            - ../var/www/html/:/usr/local/apache2/htdocs/
-            - ../var/log/apache2/:/usr/local/apache2/logs/
+            - ../../etc/apache2/:/usr/local/apache2/conf
+            - ../../var/www/html/:/usr/local/apache2/htdocs/
+            - ../../var/log/apache2/:/usr/local/apache2/logs/
 
     # configuration phpmyadmin
     phpmyadmin:
-        container_name: cci-dev_phpmyadmin
+        container_name: act-dev_phpmyadmin
         image: phpmyadmin
         restart: always
         environment:

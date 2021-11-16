@@ -39,22 +39,25 @@ testCmdeValide() {
 }
 
 testConfigValide() {
-    if [[ -z $ACT_Dev_BASE ]]; then
-        echo "La première configuration d'ACT-Dev ne semble pas avoir été effectuée :" \
-             "avant de pouvoir utiliser l'environnement de développement ACT-Dev,"\
-             "la commande « dkConfig install » doit d'abord être exécutée" \
-             "à partir du répertoire bin dans le projet ACT-Dev."
-        memoChemin=`pwd`
-        if [[ -d bin ]]; then cd ./bin; fi
-        if [[ -f dkConfig ]]; then
-            echo "Voulez-vous exécuter dkConfig install immédiatement ?"
-            read -p "O pour confirmer : " confirmation
-            if [[ "${confirmation:0:1}" == "O" || "${confirmation:0:1}" == "o" ]]; then
-                echo "Attention : il faudra recharger manuellement les variables d'environnement."
-                . ./dkConfig install
-            fi
-        fi
-        cd $memoChemin
+    if [[ ! -d $cheminBase/src/alambix ]]; then
+        echo "L'installation n'est pas convenable…"
+
+#    if [[ -z $ACT_Dev_BASE ]]; then
+#        echo "La première configuration d'ACT-Dev ne semble pas avoir été effectuée :" \
+#             "avant de pouvoir utiliser l'environnement de développement ACT-Dev,"\
+#             "la commande « dkConfig install » doit d'abord être exécutée" \
+#             "à partir du répertoire bin dans le projet ACT-Dev."
+#        memoChemin=`pwd`
+#        if [[ -d bin ]]; then cd ./bin; fi
+#        if [[ -f dkConfig ]]; then
+#            echo "Voulez-vous exécuter dkConfig install immédiatement ?"
+#            read -p "O pour confirmer : " confirmation
+#            if [[ "${confirmation:0:1}" == "O" || "${confirmation:0:1}" == "o" ]]; then
+#                echo "Attention : il faudra recharger manuellement les variables d'environnement."
+#                . ./dkConfig install
+#            fi
+#        fi
+#        cd $memoChemin
         return 1
     else
         return 0
@@ -68,6 +71,7 @@ testConfigValide() {
 ##########################################################################################
 
 usage $*
+cheminBase="/opt/local"
 if testConfigValide ; then
     if testCmdeValide $1; then
         echo "Veuillez choisir quelle action lancer :"
@@ -75,10 +79,10 @@ if testConfigValide ; then
         echo "    2  - Démarrer les conteneurs principaux               -> start"
         echo "    3  - Arrêter les conteneurs principaux                -> stop"
         echo "    4  - Down pour les conteneurs principaux              -> down"
-        echo "   10  - Rentrer dans cci-dev_php-fpm                     -> contPhpJumpIn"
-        echo "   11  - Rentrer dans cci-dev_mariadb                     -> contMariaDBJumpIn"
-        echo "   12  - Rentrer dans cci-dev_httpd                       -> contApacheJumpIn"
-        echo "   13  - Rentrer dans cci-dev_phpmyadmin                  -> contPhpMyAdminJumpIn"
+        echo "   10  - Rentrer dans act-dev_php-fpm                     -> contPhpJumpIn"
+        echo "   11  - Rentrer dans act-dev_mariadb                     -> contMariaDBJumpIn"
+        echo "   12  - Rentrer dans act-dev_httpd                       -> contApacheJumpIn"
+        echo "   13  - Rentrer dans act-dev_phpmyadmin                  -> contPhpMyAdminJumpIn"
         echo "   50  - Première configuration                           -> install"
         echo "   51  - Nettoyage de l'inutile dans docker               -> clean"
         echo "   52  - Purger totalement docker                         -> purge"
@@ -106,32 +110,38 @@ if testConfigValide ; then
     case "$cmde" in
         "up")
                 echo "Regénération des conteneurs"
-                docker-compose -f "$CCI_dev_BASE/src/docker-compose.yml" build --pull
-                docker-compose -f "$CCI_dev_BASE/src/docker-compose.yml" up -d
+                docker-compose -f $cheminBase/src/alambix/docker-compose.yml build --pull
+                docker-compose -f $cheminBase/src/alambix/docker-compose.yml up -d
             ;;
         "start")
                 echo "Lancement des conteneurs docker"
-                docker start cci-dev_mariadb cci-dev_httpd cci-dev_php-fpm
+                docker start act-dev_mariadb \
+                             act-dev_httpd \
+                             act-dev_php-fpm \
+                             act-dev_phpmyadmin
             ;;
         "stop")
                 echo "Arrêt des conteneurs docker"
-                docker stop cci-dev_mariadb cci-dev_httpd cci-dev_php-fpm
+                docker stop act-dev_mariadb \
+                            act-dev_httpd \
+                            act-dev_php-fpm \
+                            act-dev_phpmyadmin
             ;;
         "down")
                 echo "Down pour les conteneurs"
-                docker-compose -f $CCI_dev_BASE/src/docker-compose.yml down
+                docker-compose -f $cheminBase/src/alambix/docker-compose.yml down
             ;;
         "contPhpJumpIn")
-                docker exec -it cci-dev_php-fpm /bin/bash
+                docker exec -it act-dev_php-fpm /bin/bash
             ;;
         "contMariaDBJumpIn")
-                docker exec -it cci-dev_mariadb /bin/bash
+                docker exec -it act-dev_mariadb /bin/bash
             ;;
         "contApacheJumpIn")
-                docker exec -it cci-dev_httpd /bin/bash
+                docker exec -it act-dev_httpd /bin/bash
             ;;
         "contPhpMyAdminJumpIn")
-                docker exec -it cci-dev_phpmyadmin /bin/bash
+                docker exec -it act-dev_phpmyadmin /bin/bash
             ;;
         "clean") # Nettoyage de l'inutile dans docker
                 echo "Nettoyage de Docker…"

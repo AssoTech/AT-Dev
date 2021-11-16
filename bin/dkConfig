@@ -100,12 +100,13 @@ else
     cmde=$1
     shift
 fi
+cheminBase="/opt/local"
 case "$cmde" in
     "install") # Première configuration
             mkdir -p /opt
             mv ../../ACT-Dev /opt/local
-            cd /opt/local
-            chmod -R root:adm .
+            cd $cheminBase
+            chown -R root:adm .
             if [[ ! -f "src/secrets/dbRootPass.txt" ]] ; then
                 echo "Fasirtai789+_JolmkapnfGfeoi=628/85zc" > src/secrets/dbRootPass.txt
             fi
@@ -141,7 +142,18 @@ case "$cmde" in
     "update") # Mise à jour de la configuration
             if testConfigValide ; then
                 echo "Mise à jour de la configuration ACT-Dev."
-                echo "--> en attente de réalisation…"
+                cd $cheminBase
+                chown -R root:adm .
+                chmod -R g+w .
+                if [[ ! -f "src/secrets/dbRootPass.txt" ]] ; then
+                    echo "Fasirtai789+_JolmkapnfGfeoi=628/85zc" > src/secrets/dbRootPass.txt
+                fi
+                if [[ ! -f "src/secrets/uMariadbPass.txt" ]] ; then
+                    echo "mariadb*1" > src/secrets/uMariadbPass.txt
+                fi
+                if [[ ! -f "src/secrets/uPhpmyadminPass.txt" ]] ; then
+                    echo "Zioprgio156+_PlimkkuifGfeoi=197/54rt" > src/secrets/uPhpmyadminPass.txt
+                fi
             fi
         ;;
     "bye")  echo "Au revoir..." ;;
